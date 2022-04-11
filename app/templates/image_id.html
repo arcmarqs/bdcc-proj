@@ -10,17 +10,30 @@
         <th>Relations</th>
         <th>Image</th>
     </tr>
+  
+
     <tr>
+       
         <td>
-           
+            {% for result in data.results1 %}
+            <a href=" /image_search?description={{ result[0] }}">{{ result[0] }}</a>
+            <br>
+            {% endfor %}
         </td>
         <td>
            
+            {% for result in data.results %}
+            <a href="/relation_search?relation={{ result[1] }}&class1={{result[0]}}&class2={{result[2]}}">{{ result[0]}} {{ result[1]}} {{ result[2] }}</a>
+            <br>
+            {% endfor %}
+        </td>
+        <td>
+            <a href="https://storage.googleapis.com/bdcc_open_images_dataset/images/{{ data.image_id }}.jpg">
+                <img width="300" src="https://storage.googleapis.com/bdcc_open_images_dataset/images/{{ data.image_id  }}.jpg"/>
+            </a>
         </td>
     </tr>
-
-</table>
-
+    
 
 </table>
 

@@ -46,8 +46,8 @@ def classes():
     results = BQ_CLIENT.query(
     '''
         Select Description, COUNT(*) AS NumImages
-        FROM `bdcc22project.openimages.image_labels`
-        JOIN `bdcc22project.openimages.classes` USING(Label)
+        FROM `bdcc-proj.openimages.image_labels`
+        JOIN `bdcc-proj.openimages.classes` USING(Label)
         GROUP BY Description
         ORDER BY Description
     ''').result()
@@ -60,7 +60,7 @@ def relations():
     results = BQ_CLIENT.query(
     '''
         SELECT Relation, COUNT(*) As NumImages
-        FROM `bdcc22project.openimages.relations`
+        FROM `bdcc-proj.openimages.relations`
         GROUP BY Relation
         ORDER BY Relation ASC
     ''').result()
@@ -72,18 +72,36 @@ def relations():
 def image_info():
     image_id = flask.request.args.get('image_id')
     # TODO
-    """
+    
     results = BQ_CLIENT.query(
     '''
      
+    SELECT DISTINCT class1.description,
+    rel.relation,
+    class2.description, 
+    ImageID 
+    FROM bdcc-proj.openimages.relations rel
+    INNER JOIN bdcc-proj.openimages.image_labels USING(ImageId)
+    INNER JOIN bdcc-proj.openimages.classes class1 ON class1.label = rel.Label1
+    INNER JOIN bdcc-proj.openimages.classes class2 ON class2.label = rel.Label2
+    Where ImageID = "{0}" 
+
+
     '''.format(image_id)
     ).result()
-    logging.info('image_info: image_id={}, results={}'\
-           .format(image_id, results.total_rows))
+    results1 =  BQ_CLIENT.query(
+    '''
+    SELECT Description
+    from bdcc-proj.openimages.classes   
+    INNER JOIN bdcc-proj.openimages.image_labels USING(Label)
+    Where ImageID = "{0}"
+    ORDER BY Description ASC
+    '''.format(image_id)
+    )
+    #logging.info('image_info: image_id={}, results={}'\
+    #       .format(image_id, results.total_rows))
     data = dict(image_id=image_id,
-                results=results) 
-                """
-    data = dict(image_id = image_id)
+                results=results, results1 = results1) 
     return flask.render_template('image_id.html',data = data)
 
 @app.route('/image_search')
@@ -93,8 +111,8 @@ def image_search():
     results = BQ_CLIENT.query(
     '''
         SELECT ImageId
-        FROM `bdcc22project.openimages.image_labels`
-        JOIN `bdcc22project.openimages.classes` USING(Label)
+        FROM `bdcc-proj.openimages.image_labels`
+        JOIN `bdcc-proj.openimages.classes` USING(Label)
         WHERE Description = '{0}' 
         ORDER BY ImageId
         LIMIT {1}  
@@ -119,9 +137,9 @@ def relation_search():
         class1.description,
         rel.relation,
         class2.description
-        From `bdcc22project.openimages.relations` rel
-        INNER JOIN `bdcc22project.openimages.classes` class1 ON class1.Label = rel.Label1 
-        INNER JOIN `bdcc22project.openimages.classes` class2 ON class2.Label = rel.Label2
+        From `bdcc-proj.openimages.relations` rel
+        INNER JOIN `bdcc-proj.openimages.classes` class1 ON class1.Label = rel.Label1 
+        INNER JOIN `bdcc-proj.openimages.classes` class2 ON class2.Label = rel.Label2
         WHERE class1.description LIKE "{0}" AND 
         rel.relation LIKE "{1}" AND
         class2.description LIKE "{2}"
