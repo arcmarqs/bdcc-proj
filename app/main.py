@@ -161,7 +161,23 @@ def image_search_multiple():
     descriptions = flask.request.args.get('descriptions').split(',')
     image_limit = flask.request.args.get('image_limit', default=10, type=int)
     # TODO
-    return flask.render_template('not_implemented.html')
+    results = BQ_CLIENT.query(
+    '''
+        SELECT ImageId, ARRAY_AGG(Description), COUNT(Description) as descr 
+        FROM `bdcc-proj.openimages.image_labels`
+        JOIN `bdcc-proj.openimages.classes` USING(Label)
+        WHERE Description IN UNNEST({0}) 
+        GROUP BY ImageId
+        ORDER BY descr desc, ImageId 
+        LIMIT {1}
+    '''.format(descriptions, image_limit)
+    ).result()
+    logging.info('image_search_multiple: description={} limit={}, results={}'\
+           .format(descriptions, image_limit, results.total_rows))
+    data = dict(description=descriptions, 
+                image_limit=image_limit,
+                results=results)
+    return flask.render_template('image_search_multiple.html', data = data)
 
 @app.route('/image_classify_classes')
 def image_classify_classes():
