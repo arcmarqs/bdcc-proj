@@ -31,8 +31,8 @@ APP_BUCKET = storage.Client().bucket(BUCKET_NAME)
 
 logging.info('Initialising TensorFlow classifier')
 TF_CLASSIFIER = tfmodel.Model(
-    app.root_path + "/static/tflite/model.tflite",
-    app.root_path + "/static/tflite/dict.txt"
+    app.root_path + "/static/tflite/my_model.tflite",
+    app.root_path + "/static/tflite/my_dict.txt"
 )
 logging.info('Initialisation complete')
 
@@ -181,7 +181,7 @@ def image_search_multiple():
 
 @app.route('/image_classify_classes')
 def image_classify_classes():
-    with open(app.root_path + "/static/tflite/dict.txt", 'r') as f:
+    with open(app.root_path + "/static/tflite/my_dict.txt", 'r') as f:
         data = dict(results=sorted(list(f)))
         return flask.render_template('image_classify_classes.html', data=data)
  

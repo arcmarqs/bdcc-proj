@@ -8,8 +8,8 @@ import sys
 import tfmodel
 
 home_dir = os.path.dirname(sys.argv[0])
-model_file = os.path.join(home_dir, 'static/tflite/model.tflite')
-label_file = os.path.join(home_dir, 'static/tflite/dict.txt')
+model_file = os.path.join(home_dir, 'static/tflite/my_model.tflite')
+label_file = os.path.join(home_dir, 'static/tflite/my_dict.txt')
 
 tf_classifier = tfmodel.Model(model_file, label_file)
 
