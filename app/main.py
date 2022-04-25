@@ -16,6 +16,7 @@ logging.basicConfig(level=logging.INFO,
                      datefmt='%Y-%m-%d %H:%M:%S')
 
 PROJECT = os.environ.get('GOOGLE_CLOUD_PROJECT') 
+KEY = os.environ.setdefault('GOOGLE_CLOUD_PROJECT',"/home/maramadeu/bdcc-proj-762bedfa280a.json") 
 logging.info('Google Cloud project is {}'.format(PROJECT))
 
 # Initialisation
@@ -220,7 +221,7 @@ def image_classify():
             results.append(dict(bucket=APP_BUCKET,
                                 filename=file.filename,
                                 classifications=classifications))
-                                
+
     data = dict(bucket_name=APP_BUCKET.name, 
                 min_confidence=min_confidence, 
                 results=results)
