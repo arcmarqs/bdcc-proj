@@ -25,7 +25,7 @@ app = flask.Flask(__name__)
 logging.info('Initialising BigQuery client')
 BQ_CLIENT = bigquery.Client()
 
-BUCKET_NAME = PROJECT + '.appspot.com'
+BUCKET_NAME = PROJECT + ".appspot.com"
 logging.info('Initialising access to storage bucket {}'.format(BUCKET_NAME))
 APP_BUCKET = storage.Client().bucket(BUCKET_NAME)
 
@@ -184,8 +184,49 @@ def image_classify_classes():
     with open(app.root_path + "/static/tflite/my_dict.txt", 'r') as f:
         data = dict(results=sorted(list(f)))
         return flask.render_template('image_classify_classes.html', data=data)
+
+def detect_labels(uri):
+    """Detects labels in the file located in Google Cloud Storage or on the
+    Web."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+    image = vision.Image()
+    image.source.image_uri = uri
+
+    response = client.label_detection(image=image)
+    labels = response.label_annotations
+
+    if response.error.message:
+        raise Exception(
+            '{}\nFor more info on error messages, check: '
+            'https://cloud.google.com/apis/design/errors'.format(
+                response.error.message))
+                
+    return labels
  
 @app.route('/image_classify', methods=['POST'])
+def image_classify():
+    files = flask.request.files.getlist('files')
+    min_confidence = flask.request.form.get('min_confidence', default=0.25, type=float)
+    results = []
+    if len(files) > 1 or files[0].filename != '':
+        for file in files:
+            blob = storage.Blob(file.filename, APP_BUCKET)
+            blob.upload_from_file(file, blob, content_type=file.mimetype)
+            blob.make_public()
+            classifications = detect_labels("https://storage.googleapis.com/bdcc-proj.appspot.com/"+file.filename)
+            logging.info('image_classify: filename={} blob={} classifications={}'\
+                .format(file.filename,blob.name,classifications))
+            results.append(dict(bucket=APP_BUCKET,
+                                filename=file.filename,
+                                classifications=classifications))
+                                
+    data = dict(bucket_name=APP_BUCKET.name, 
+                min_confidence=min_confidence, 
+                results=results)
+    return flask.render_template('image_classify.html', data=data)
+
+'''
 def image_classify():
     files = flask.request.files.getlist('files')
     min_confidence = flask.request.form.get('min_confidence', default=0.25, type=float)
@@ -206,7 +247,7 @@ def image_classify():
                 min_confidence=min_confidence, 
                 results=results)
     return flask.render_template('image_classify.html', data=data)
-
+'''
 
 
 if __name__ == '__main__':

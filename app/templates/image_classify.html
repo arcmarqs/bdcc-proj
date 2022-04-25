@@ -28,10 +28,10 @@ with a minimum confidence level of <b>{{ data.min_confidence }}</b>.
                 {% for classification in result.classifications %}
                 <tr>
                     <td>
-                        <a href="/image_search?description={{ classification.label }}">{{ classification.label }}</a>
+                        <a href="/image_search?description={{ classification.description }}">{{ classification.description }}</a>
                     </td>
                     <td>
-                        {{ classification.confidence }}
+                        {{ '%0.2f' | format(classification.score|float) }}
                     </td>
                 </tr>
                 {% endfor %}
